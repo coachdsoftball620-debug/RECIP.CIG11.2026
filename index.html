@@ -1,0 +1,1928 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Prep Recipes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#3A1A0C">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Covered in Grace Prep Recipes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: sticky espresso header, then either a grid of large recipe tiles (home) or a yield band + ingredients / steps columns (recipe). Tablet-first, one column on phones. */
+:root {
+  --bg: #FBF3E4;
+  --surface: #FFFCF6;
+  --fg: #2B1409;
+  --muted: #5A3F2E;
+  --line: #7A5A44;
+  --head-bg: #3A1A0C;
+  --head-fg: #FFF6E6;
+  --tile-bg: #3A1A0C;
+  --tile-fg: #FFF6E6;
+  --tile-line: #3A1A0C;
+  --gold: #F2B84B;
+  --gold-fg: #2B1409;
+  --gold-text: #8A4B0F;
+  --done-bg: #E3EED8;
+  --done-fg: #1D3610;
+  --done-badge: #2F6B1E;
+  --done-badge-fg: #FFFFFF;
+  --focus: #0A4FCF;
+  --font-display: "Alegreya", Georgia, "Times New Roman", serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", Verdana, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1E0F08; --surface: #2C170E; --fg: #FBEFD9; --muted: #E0CBB0; --line: #A87B58;
+    --head-bg: #120804; --head-fg: #FFF6E6; --tile-bg: #3B1E11; --tile-fg: #FFF6E6; --tile-line: #A87B58;
+    --gold-text: #F2B84B; --done-bg: #22331A; --done-fg: #E2F3D2; --done-badge: #8FD16A; --done-badge-fg: #14250A;
+    --focus: #FFD36B; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1E0F08; --surface: #2C170E; --fg: #FBEFD9; --muted: #E0CBB0; --line: #A87B58;
+  --head-bg: #120804; --head-fg: #FFF6E6; --tile-bg: #3B1E11; --tile-fg: #FFF6E6; --tile-line: #A87B58;
+  --gold-text: #F2B84B; --done-bg: #22331A; --done-fg: #E2F3D2; --done-badge: #8FD16A; --done-badge-fg: #14250A;
+  --focus: #FFD36B; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 1.25rem; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 40px;
+  -webkit-tap-highlight-color: transparent;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  background: var(--head-bg); z-index: 20;
+}
+:focus-visible { outline: 5px solid var(--focus); outline-offset: 3px; }
+button, a { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+/* Header */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))) calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));
+  background: var(--head-bg); color: var(--head-fg);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  border-bottom: 4px solid var(--gold);
+}
+.logo { width: 76px; height: 76px; border-radius: 50%; flex: none; display: block; background: #FBF3E4; }
+.brand { min-width: 0; flex: 1 1 14rem; }
+.brand small { display: block; font-size: 1.05rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.brand h1, .bar h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 800; line-height: 1.05;
+  font-size: clamp(2rem, 4.2vw, 3rem); text-wrap: balance;
+}
+.btn {
+  min-height: 72px; min-width: 72px; padding: 0 28px; border-radius: 16px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  font-weight: 700; font-size: 1.5rem; text-decoration: none; border: 4px solid transparent;
+}
+.btn svg { width: 34px; height: 34px; flex: none; }
+.btn-home { background: var(--gold); color: var(--gold-fg); }
+.btn-ghost { background: transparent; color: var(--head-fg); border-color: var(--head-fg); font-size: 1.25rem; }
+.bar .title { flex: 1 1 12rem; min-width: 0; }
+.bar .title small { display: block; font-size: 1.05rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+
+main { max-width: 1280px; margin-inline: auto; padding-top: 28px; }
+
+/* Home */
+.lead { margin: 0 0 20px; font-size: 1.35rem; color: var(--muted); }
+.grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.tile {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  min-height: 240px; padding: 28px; border-radius: 24px; text-decoration: none;
+  background: var(--tile-bg); color: var(--tile-fg); border: 4px solid var(--tile-line);
+}
+.tile .kicker { font-size: 1.1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.tile h2 { margin: 6px 0 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(2.1rem, 3.6vw, 2.9rem); line-height: 1.05; text-wrap: balance; }
+.tile .meta { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { font-size: 1.2rem; font-weight: 700; padding: 8px 16px; border-radius: 999px; border: 3px solid var(--gold); color: var(--tile-fg); }
+.chip.progress { background: var(--gold); color: var(--gold-fg); }
+
+/* Recipe */
+.yield {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px;
+  padding: 20px 24px; border-radius: 20px; background: var(--surface); border: 3px solid var(--line);
+}
+.yield .label { font-size: 1.1rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--gold-text); }
+.yield .amount { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 4vw, 2.75rem); line-height: 1.1; }
+.allergen { margin-top: 16px; padding: 16px 24px; border-radius: 20px; border: 4px solid var(--fg); background: var(--gold); color: var(--gold-fg); font-size: 1.6rem; font-weight: 700; }
+.switch { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.seg { flex: 1 1 14rem; min-height: 72px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px 20px; border-radius: 16px; border: 4px solid var(--fg); background: var(--surface); color: var(--fg); font-size: 1.5rem; font-weight: 700; text-decoration: none; }
+.seg[aria-current="page"] { background: var(--head-bg); color: var(--head-fg); border-color: var(--head-bg); box-shadow: inset 0 -8px 0 var(--gold); }
+
+.check-box { margin-bottom: 20px; padding: 16px 22px; border-radius: 16px; border: 4px solid var(--fg); background: var(--gold); color: var(--gold-fg); font-size: 1.3rem; line-height: 1.4; }
+.label-card { background: #fff; color: #000; border: 4px solid #000; border-radius: 6px; padding: 22px; font-family: "Atkinson Hyperlegible", Arial, Helvetica, sans-serif; }
+.lbl-grid { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 900px) { .lbl-grid { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); } }
+.label-card mark { background: #FFE066; color: #000; padding: 0 3px; border-radius: 3px; font-weight: 700; }
+.nf { width: 100%; border: 2px solid #000; border-collapse: collapse; font-size: 1.15rem; line-height: 1.25; background: #fff; color: #000; }
+.nf caption { text-align: left; font-weight: 800; font-size: 2.3rem; line-height: 1; padding: 6px 8px 4px; border: 2px solid #000; border-bottom: 0; background: #fff; }
+.nf td { padding: 3px 8px; border-top: 1px solid #000; vertical-align: baseline; }
+.nf td:last-child { text-align: right; white-space: nowrap; }
+.nf .r { text-align: right; }
+.nf .thin td { border-top: 0; font-weight: 400; }
+.nf .thick-b td { border-top: 6px solid #000; }
+.nf .cal td { border-top: 10px solid #000; }
+.nf .calw { font-size: 1.9rem; font-weight: 800; }
+.nf .calv { font-size: 2.6rem; font-weight: 800; line-height: 1; }
+.nf .dvh td { border-top: 3px solid #000; }
+.nf .ind td:first-child { padding-left: 24px; }
+.nf .ind2 td:first-child { padding-left: 44px; }
+.nf .nfoot td { border-top: 6px solid #000; font-size: 1rem; text-align: left; white-space: normal; }
+.lbl-text { min-width: 0; font-size: 1.3rem; line-height: 1.45; }
+.lbl-text p { margin: 0 0 14px; }
+.lbl-brand { font-size: 1.05rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
+.lbl-name { margin: 4px 0 12px; font-family: "Alegreya", Georgia, serif; font-weight: 800; font-size: clamp(2rem, 4vw, 2.8rem); line-height: 1.05; }
+.lbl-alg { border: 3px solid #000; padding: 10px 14px; font-size: 1.4rem; }
+
+.menu-sec { margin-bottom: 36px; }
+.sec-h { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 3.6vw, 2.6rem); line-height: 1.1; }
+.sec-sub { margin: 4px 0 16px; font-size: 1.3rem; color: var(--muted); }
+.chip.today { background: #FFFFFF; color: #2B1409; border-color: #FFFFFF; }
+.tile-empty { background: transparent; color: var(--fg); border: 4px dashed var(--line); min-height: 200px; }
+.tile-empty .kicker { color: var(--gold-text); }
+.chip-empty { border-color: var(--line); color: var(--muted); }
+.proposed { margin-top: 16px; padding: 14px 24px; border-radius: 20px; border: 4px dashed var(--fg); background: var(--surface); color: var(--fg); font-size: 1.5rem; font-weight: 700; }
+.cols { display: grid; gap: 28px; margin-top: 28px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 960px) { .cols { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+h2.sec {
+  margin: 0 0 14px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.9rem, 3.4vw, 2.5rem); line-height: 1.1;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.count { font-family: var(--font-body); font-size: 1.3rem; font-weight: 700; color: var(--gold-text); }
+.ing-group { background: var(--surface); border: 3px solid var(--line); border-radius: 20px; padding: 18px 22px; margin-bottom: 18px; }
+.ing-group h3 { margin: 0 0 8px; font-size: 1.1rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-text); font-weight: 700; }
+.ing-group ul { list-style: none; margin: 0; padding: 0; }
+.ing-group li { display: grid; grid-template-columns: minmax(5.5rem, 7.5rem) minmax(0, 1fr); gap: 14px; padding: 10px 0; border-top: 2px solid color-mix(in srgb, var(--line) 35%, transparent); font-size: 1.4rem; line-height: 1.3; }
+.ing-group li:first-child { border-top: 0; }
+.ing-group .qty { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.step {
+  width: 100%; min-height: 96px; display: flex; align-items: center; gap: 22px; text-align: left;
+  padding: 18px 22px; border-radius: 20px; background: var(--surface); color: var(--fg); border: 4px solid var(--line);
+}
+.step .num {
+  flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 700; font-size: 2rem; border: 4px solid var(--fg); background: transparent; font-variant-numeric: tabular-nums;
+}
+.step .num svg { width: 38px; height: 38px; display: none; }
+.step .txt { min-width: 0; white-space: pre-line; font-weight: 700; font-size: clamp(1.6rem, 2.2vw + .8rem, 2.3rem); line-height: 1.25; }
+.step[aria-checked="true"] { background: var(--done-bg); color: var(--done-fg); border-color: var(--done-badge); }
+.step[aria-checked="true"] .num { background: var(--done-badge); border-color: var(--done-badge); color: var(--done-badge-fg); }
+.step[aria-checked="true"] .num span { display: none; }
+.step[aria-checked="true"] .num svg { display: block; }
+.step[aria-checked="true"] .txt { text-decoration: line-through; text-decoration-thickness: 3px; }
+
+.done-banner {
+  margin-top: 20px; padding: 20px 24px; border-radius: 20px; background: var(--done-badge); color: var(--done-badge-fg);
+  font-size: 1.8rem; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+}
+.foot { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 16px; }
+.foot .btn-ghost { color: var(--fg); border-color: var(--fg); }
+.foot .btn-home { background: var(--head-bg); color: var(--head-fg); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: no-preference) {
+  .step, .tile, .btn { transition: background-color .15s, border-color .15s, transform .1s; }
+  .step:active, .tile:active, .btn:active { transform: scale(.98); }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<script>
+/* To add a recipe, add one more object to RECIPES. The home grid builds itself. */
+var RECIPES = [
+  {
+    id: "ghost-latte",
+    name: "Ghost Latte",
+    line: "Spirit of Sweetness",
+    makes: "1 drink, 16 fl oz",
+    groups: [
+      { title: "Latte base", items: [
+        ["2 tsp", "NESCAFÉ Blonde instant espresso"],
+        ["2 oz", "warm water"],
+        ["3 pumps", "marshmallow syrup (Monin or Torani)"],
+        ["1 pump", "vanilla syrup"],
+        ["6 oz", "whole milk or Kirkland lactose-free milk"],
+        ["1–2 tbsp", "marshmallow fluff"]
+      ]},
+      { title: "Sweet cold foam", items: [
+        ["2 tbsp", "heavy whipping cream (Kroger)"],
+        ["1 tbsp", "milk"],
+        ["1 tsp", "powdered sugar"],
+        ["1 tsp", "vanilla bean paste"],
+        ["1 tsp", "McCormick pumpkin pie spice"]
+      ]},
+      { title: "To finish", items: [
+        ["To fill", "ice"],
+        ["Sprinkle", "McCormick pumpkin pie spice"]
+      ]}
+    ],
+    steps: [
+      "Dissolve the instant espresso in the warm water.",
+      "Add the syrups and marshmallow fluff to a 16 oz cup.",
+      "Pour in the espresso and milk, then stir until smooth.",
+      "Whisk all the foam ingredients until thick and creamy.",
+      "Fill the cup with ice and pour in the latte.",
+      "Top with a generous layer of sweet cold foam.",
+      "Sprinkle with pumpkin pie spice and serve."
+    ]
+  },
+  {
+    id: "brown-sugar-cookie-butter-latte",
+    name: "Brown Sugar Cookie Butter Latte",
+    line: "Sweetly Blessed",
+    makes: "1 drink, 16 fl oz",
+    groups: [
+      { title: "Espresso / coffee base", items: [
+        ["2 shots", "espresso (or ½ cup strong brewed coffee or instant espresso)"],
+        ["1–2 tbsp", "creamy cookie butter (Biscoff® or similar)"],
+        ["1 tsp", "light brown sugar (or brown sugar cookie syrup)"],
+        ["Pinch", "ground cinnamon and sea salt"]
+      ]},
+      { title: "Latte milk", items: [
+        ["1 cup", "milk of your choice (whole milk, 2%, or oat milk)"],
+        ["Optional", "ice cubes, for iced latte"]
+      ]},
+      { title: "Cookie butter cold foam", items: [
+        ["¼ cup", "heavy cream"],
+        ["1 tbsp", "milk"],
+        ["1 tbsp", "cookie butter spread"],
+        ["1 tsp", "powdered sugar or vanilla extract"]
+      ]},
+      { title: "Garnish", items: [
+        ["Sprinkle", "crushed Biscoff® cookies"],
+        ["Drizzle", "melted cookie butter"]
+      ]}
+    ],
+    steps: [
+      "Add the cookie butter, brown sugar, cinnamon and salt to your cup.",
+      "Brew 2 shots of hot espresso over it and stir until smooth.",
+      "Iced: Fill a 16 oz cup with ice, add 1 cup milk and the espresso mix.\nHot: Froth 1 cup warm milk and pour it over the espresso.",
+      "Froth the foam ingredients for 30–45 seconds until thick and velvety.",
+      "Top with a generous layer of cookie butter cold foam.",
+      "Finish with crushed Biscoff® cookies and melted cookie butter."
+    ]
+  },
+  {
+    id: "sweet-and-salty-iced-coffee",
+    name: "Sweet & Salty Iced Coffee",
+    line: "Taste & See",
+    makes: "1 drink, 16 fl oz",
+    groups: [
+      { title: "Coffee base", items: [
+        ["2 tsp", "NESCAFÉ Blonde instant espresso"],
+        ["2 oz", "warm water"],
+        ["2 tsp", "hazelnut syrup (Monin or Torani)"],
+        ["2 tsp", "Torani cupcake syrup"],
+        ["2 tsp", "Ghirardelli sea salt caramel sauce"],
+        ["1 tbsp", "Ghirardelli white chocolate sauce"],
+        ["1 tsp", "caramel sauce (for cup)"],
+        ["1 tsp", "white chocolate sauce (for cup)"],
+        ["6 oz", "whole milk or Kirkland lactose-free milk"],
+        ["To fill", "ice"]
+      ]},
+      { title: "Sweet cold foam", items: [
+        ["2 tbsp", "heavy whipping cream (Kroger)"],
+        ["1 tbsp", "milk"],
+        ["1 tsp", "powdered sugar"],
+        ["1 tsp", "vanilla bean paste"],
+        ["Pinch", "sea salt"]
+      ]},
+      { title: "Topping", items: [
+        ["1 tsp", "caramel drizzle"],
+        ["Dash", "McCormick chocolate hazelnut finish spice"]
+      ]}
+    ],
+    steps: [
+      "Drizzle 1 tsp caramel sauce and 1 tsp white chocolate sauce inside a 16 oz cup.",
+      "In a separate cup, dissolve the instant espresso in the warm water.",
+      "Add the hazelnut syrup, cupcake syrup, caramel sauce and white chocolate sauce. Stir well.",
+      "Add 6 oz milk and stir to combine.",
+      "Fill the cup with ice and pour in the espresso mixture.",
+      "Whisk the foam ingredients until smooth and creamy.",
+      "Top with cold foam, 1 tsp caramel drizzle and a dash of finish spice."
+    ]
+  },
+  {
+    id: "oreo-chocolate-latte",
+    name: "Oreo® Chocolate Latte",
+    line: "Made for More",
+    makes: "1 drink, 16 fl oz",
+    groups: [
+      { title: "Latte base", items: [
+        ["2 tsp", "NESCAFÉ Blonde instant espresso"],
+        ["2 oz", "warm water"],
+        ["1½ tbsp", "Ghirardelli chocolate sauce"],
+        ["1 pump", "vanilla syrup"],
+        ["6 oz", "whole milk or Kirkland lactose-free milk"],
+        ["To fill", "ice"]
+      ]},
+      { title: "Oreo® chocolate cold foam", items: [
+        ["2 tbsp", "heavy whipping cream (Kroger)"],
+        ["1 tbsp", "milk"],
+        ["1 tbsp", "Oreo® cookie crumbs (finely crushed)"],
+        ["1 tsp", "powdered sugar"],
+        ["½ tsp", "vanilla bean paste or vanilla syrup"]
+      ]},
+      { title: "Topping", items: [
+        ["Drizzle", "chocolate sauce"],
+        ["Sprinkle", "crushed Oreo® cookies"]
+      ]}
+    ],
+    steps: [
+      "Dissolve the instant espresso in the warm water.",
+      "Add the chocolate sauce and vanilla syrup to a 16 oz cup.",
+      "Pour in the espresso and 6 oz milk, then stir to combine.",
+      "Whisk the foam ingredients until thick, creamy and pourable.",
+      "Fill the cup with ice and pour in the chocolate latte.",
+      "Top with a generous layer of Oreo® cold foam.",
+      "Drizzle with chocolate sauce and finish with crushed Oreo® cookies."
+    ]
+  },
+  {
+    id: "chocolate-peanut-butter-cup-latte",
+    name: "Chocolate Peanut Butter Cup Latte",
+    line: "Chosen & Cherished",
+    makes: "1 drink, 16 oz iced",
+    allergens: "Contains milk and peanuts",
+    groups: [
+      { title: "Latte", items: [
+        ["2 tsp", "NESCAFÉ Blonde instant espresso"],
+        ["2 oz", "warm water"],
+        ["1 tbsp", "Ghirardelli chocolate sauce"],
+        ["1 tbsp", "creamy peanut butter"],
+        ["6 oz", "whole or lactose-free milk"],
+        ["As needed", "ice"]
+      ]},
+      { title: "Chocolate peanut butter cold foam", items: [
+        ["2 tbsp", "Kroger heavy whipping cream"],
+        ["1 tbsp", "whole milk"],
+        ["1 tsp", "creamy peanut butter"],
+        ["1 tsp", "Ghirardelli chocolate sauce"],
+        ["1 tsp", "powdered sugar"],
+        ["1", "finely crushed mini peanut butter cup"]
+      ]}
+    ],
+    steps: [
+      "Dissolve the espresso in the warm water.",
+      "Whisk in the chocolate sauce and peanut butter.",
+      "Add the milk and stir until smooth.",
+      "Froth the cream, milk, peanut butter, chocolate and sugar.",
+      "Pour the latte over ice.",
+      "Top with the foam and crushed peanut butter cup."
+    ]
+  },
+  {
+    "id": "cocoa-cloud-latte",
+    "name": "Cocoa Cloud Latte",
+    "line": "Heaven Sent",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Latte",
+        "items": [
+          [
+            "2 tsp",
+            "NESCAFÉ Blonde instant espresso"
+          ],
+          [
+            "2 oz",
+            "warm water"
+          ],
+          [
+            "1 tbsp",
+            "Ghirardelli chocolate flavored sauce"
+          ],
+          [
+            "1 tbsp",
+            "Ghirardelli salted caramel sauce"
+          ],
+          [
+            "6 oz",
+            "whole milk or Kirkland lactose-free milk"
+          ],
+          [
+            "To fill",
+            "ice"
+          ]
+        ]
+      },
+      {
+        "title": "Cocoa Cloud foam",
+        "items": [
+          [
+            "3 tbsp",
+            "heavy whipping cream"
+          ],
+          [
+            "2 tbsp",
+            "milk"
+          ],
+          [
+            "1 tbsp",
+            "Ghirardelli cocoa powder"
+          ],
+          [
+            "½ tbsp",
+            "Monin vanilla syrup"
+          ],
+          [
+            "Pinch",
+            "sea salt"
+          ],
+          [
+            "1 tbsp",
+            "powdered sugar"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Dissolve the instant espresso in the warm water.",
+      "Stir in the chocolate and salted caramel sauces.",
+      "Add the milk and pour over ice.",
+      "Whip the foam ingredients until thick but pourable.",
+      "Top the latte with the cocoa foam and serve cold."
+    ],
+    "note": "Use Ghirardelli regular chocolate flavored sauce, not premium dark."
+  },
+  {
+    "id": "salted-maple-latte",
+    "name": "Salted Maple Latte",
+    "line": "Be Still",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Latte",
+        "items": [
+          [
+            "2 tsp",
+            "NESCAFÉ Blonde instant espresso"
+          ],
+          [
+            "2 oz",
+            "warm water"
+          ],
+          [
+            "1 tbsp",
+            "maple syrup"
+          ],
+          [
+            "Small pinch",
+            "sea salt"
+          ],
+          [
+            "6 oz",
+            "whole milk or Kirkland lactose-free milk"
+          ],
+          [
+            "To fill",
+            "ice"
+          ]
+        ]
+      },
+      {
+        "title": "Signature Grace Foam",
+        "items": [
+          [
+            "1 tbsp",
+            "heavy whipping cream"
+          ],
+          [
+            "2 tbsp",
+            "milk"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Dissolve the instant espresso in the warm water.",
+      "Stir in the maple syrup and sea salt.",
+      "Add the milk and pour over ice.",
+      "Froth the foam ingredients.",
+      "Top the latte with the foam."
+    ],
+    "note": "Name was finalized, but exact recipe quantities were not supplied.",
+    "proposed": true
+  },
+  {
+    "id": "vanilla-bean-latte",
+    "name": "Vanilla Bean Latte",
+    "line": "Everyday favorite",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Latte",
+        "items": [
+          [
+            "2 tsp",
+            "NESCAFÉ Blonde instant espresso"
+          ],
+          [
+            "2 oz",
+            "warm water"
+          ],
+          [
+            "6 oz",
+            "whole milk or Kirkland lactose-free milk"
+          ],
+          [
+            "3 pumps",
+            "Monin or Torani vanilla bean or vanilla syrup"
+          ],
+          [
+            "To fill",
+            "ice"
+          ]
+        ]
+      },
+      {
+        "title": "Signature Grace Foam",
+        "items": [
+          [
+            "1 tbsp",
+            "heavy whipping cream"
+          ],
+          [
+            "2 tbsp",
+            "milk"
+          ],
+          [
+            "Optional",
+            "2 pumps vanilla syrup"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Dissolve the instant espresso in the warm water.",
+      "Mix in the vanilla syrup and milk.",
+      "Pour over ice in a 16 oz cup.",
+      "Froth the foam until airy.",
+      "Spoon the foam over the drink."
+    ],
+    "proposed": true
+  },
+  {
+    "id": "mocha-latte",
+    "name": "Mocha Latte",
+    "line": "Everyday favorite",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Latte",
+        "items": [
+          [
+            "2 tsp",
+            "NESCAFÉ Blonde instant espresso"
+          ],
+          [
+            "2 oz",
+            "warm water"
+          ],
+          [
+            "1 tbsp",
+            "Ghirardelli chocolate flavored sauce"
+          ],
+          [
+            "6 oz",
+            "whole milk or Kirkland lactose-free milk"
+          ],
+          [
+            "To fill",
+            "ice"
+          ]
+        ]
+      },
+      {
+        "title": "Signature Grace Foam",
+        "items": [
+          [
+            "1 tbsp",
+            "heavy whipping cream"
+          ],
+          [
+            "2 tbsp",
+            "milk"
+          ],
+          [
+            "Optional",
+            "2 pumps vanilla syrup"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Dissolve the instant espresso in the warm water.",
+      "Whisk in the chocolate sauce.",
+      "Stir in the milk and pour over ice.",
+      "Froth the foam ingredients.",
+      "Top the latte with the foam."
+    ],
+    "proposed": true
+  },
+  {
+    "id": "cinnamon-roll-latte",
+    "name": "Cinnamon Roll Latte",
+    "line": "Everyday favorite",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Latte",
+        "items": [
+          [
+            "2 tsp",
+            "NESCAFÉ Blonde instant espresso"
+          ],
+          [
+            "2 oz",
+            "warm water"
+          ],
+          [
+            "6 oz",
+            "whole milk or Kirkland lactose-free milk"
+          ],
+          [
+            "3 pumps",
+            "cinnamon roll flavored syrup"
+          ],
+          [
+            "To fill",
+            "ice"
+          ]
+        ]
+      },
+      {
+        "title": "Signature Grace Foam",
+        "items": [
+          [
+            "1 tbsp",
+            "heavy whipping cream"
+          ],
+          [
+            "2 tbsp",
+            "milk"
+          ],
+          [
+            "Optional",
+            "2 pumps cinnamon roll syrup"
+          ]
+        ]
+      },
+      {
+        "title": "Finish",
+        "items": [
+          [
+            "Optional",
+            "light dusting of cinnamon"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Dissolve the instant espresso in the warm water.",
+      "Add the cinnamon roll syrup and milk.",
+      "Pour over ice.",
+      "Froth the foam and add it on top.",
+      "Dust lightly with cinnamon if desired."
+    ],
+    "proposed": true
+  },
+  {
+    "id": "pumpkin-cheesecake-latte",
+    "name": "Pumpkin Cheesecake Latte",
+    "line": "Seasonal blessing",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Latte",
+        "items": [
+          [
+            "2 tsp",
+            "NESCAFÉ Blonde instant espresso"
+          ],
+          [
+            "2 oz",
+            "warm water"
+          ],
+          [
+            "6 oz",
+            "whole milk or Kirkland lactose-free milk"
+          ],
+          [
+            "1 tbsp",
+            "Torani pumpkin spice syrup"
+          ],
+          [
+            "1 tbsp",
+            "Jell-O cheesecake pudding mix"
+          ],
+          [
+            "To fill",
+            "ice"
+          ]
+        ]
+      },
+      {
+        "title": "Cheesecake foam",
+        "items": [
+          [
+            "1 tsp",
+            "Jell-O cheesecake pudding mix"
+          ],
+          [
+            "2 tbsp",
+            "Kroger heavy whipping cream"
+          ],
+          [
+            "1 tsp",
+            "vanilla bean paste"
+          ],
+          [
+            "Dash",
+            "McCormick pumpkin pie spice"
+          ],
+          [
+            "Pinch",
+            "sea salt"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Dissolve the instant espresso in the warm water.",
+      "Stir in the pumpkin spice syrup.",
+      "Whisk the pudding mix with a small amount of cold milk until smooth.",
+      "Whisk in the remaining milk.",
+      "Combine with the espresso mixture and pour over ice.",
+      "Whip the foam until smooth and thick.",
+      "Top the latte with the cheesecake foam."
+    ],
+    "proposed": true,
+    "note": "Bottled version: check that the pudding mix hydrates fully and does not separate, and confirm safe refrigerated handling before service."
+  },
+  {
+    "id": "strawberry-acai-refresher",
+    "name": "Strawberry Açaí",
+    "line": "Everyday refresher · lemonade base",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Refresher",
+        "items": [
+          [
+            "4 pumps",
+            "strawberry-açaí compatible fruit syrup (or a tested blend)"
+          ],
+          [
+            "8 oz",
+            "Simply Lemonade Original"
+          ],
+          [
+            "To fill",
+            "ice"
+          ],
+          [
+            "Optional",
+            "water to adjust sweetness, only after testing"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Add the syrups to a 16 oz serving cup.",
+      "Add the measured base and stir thoroughly.",
+      "Fill with ice, stir again and serve immediately."
+    ],
+    "proposed": true,
+    "note": "Kitchen note: four pumps total per drink. Pump volume and final beverage yield depend on equipment and ice.",
+    "cupOnly": true
+  },
+  {
+    "id": "peach-mango-refresher",
+    "name": "Peach Mango",
+    "line": "Everyday refresher · lemonade base",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Refresher",
+        "items": [
+          [
+            "2 pumps",
+            "peach syrup"
+          ],
+          [
+            "2 pumps",
+            "mango syrup"
+          ],
+          [
+            "8 oz",
+            "Simply Lemonade Original"
+          ],
+          [
+            "To fill",
+            "ice"
+          ],
+          [
+            "Optional",
+            "water to adjust sweetness, only after testing"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Add the syrups to a 16 oz serving cup.",
+      "Add the measured base and stir thoroughly.",
+      "Fill with ice, stir again and serve immediately."
+    ],
+    "proposed": true,
+    "note": "Kitchen note: four pumps total per drink. Pump volume and final beverage yield depend on equipment and ice.",
+    "cupOnly": true
+  },
+  {
+    "id": "watermelon-refresher",
+    "name": "Watermelon",
+    "line": "Everyday refresher · sparkling water base",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Refresher",
+        "items": [
+          [
+            "4 pumps",
+            "watermelon syrup"
+          ],
+          [
+            "8 oz",
+            "chilled sparkling water"
+          ],
+          [
+            "To fill",
+            "ice"
+          ],
+          [
+            "Optional",
+            "water to adjust sweetness, only after testing"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Add the syrups to a 16 oz serving cup.",
+      "Add the measured base and stir thoroughly.",
+      "Fill with ice, stir again and serve immediately."
+    ],
+    "proposed": true,
+    "note": "Kitchen note: four pumps total per drink. Pump volume and final beverage yield depend on equipment and ice.",
+    "cupOnly": true
+  },
+  {
+    "id": "pink-lotus-refresher",
+    "name": "Pink Lotus",
+    "line": "Everyday refresher · still water base",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Refresher",
+        "items": [
+          [
+            "4 pumps",
+            "pink-lotus-compatible fruit syrup or tested pink fruit blend"
+          ],
+          [
+            "8 oz",
+            "chilled still water"
+          ],
+          [
+            "To fill",
+            "ice"
+          ],
+          [
+            "Optional",
+            "water to adjust sweetness, only after testing"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Add the syrups to a 16 oz serving cup.",
+      "Add the measured base and stir thoroughly.",
+      "Fill with ice, stir again and serve immediately."
+    ],
+    "proposed": true,
+    "note": "Kitchen note: four pumps total per drink. Pump volume and final beverage yield depend on equipment and ice.",
+    "cupOnly": true
+  },
+  {
+    "id": "blue-raspberry-refresher",
+    "name": "Blue Raspberry",
+    "line": "Everyday refresher · lemonade base",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Refresher",
+        "items": [
+          [
+            "4 pumps",
+            "blue raspberry syrup"
+          ],
+          [
+            "8 oz",
+            "Simply Lemonade Original"
+          ],
+          [
+            "To fill",
+            "ice"
+          ],
+          [
+            "Optional",
+            "water to adjust sweetness, only after testing"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Add the syrups to a 16 oz serving cup.",
+      "Add the measured base and stir thoroughly.",
+      "Fill with ice, stir again and serve immediately."
+    ],
+    "proposed": true,
+    "note": "Kitchen note: four pumps total per drink. Pump volume and final beverage yield depend on equipment and ice.",
+    "cupOnly": true
+  },
+  {
+    "id": "tropical-sunrise-refresher",
+    "name": "Tropical Sunrise",
+    "line": "Everyday refresher · lemonade base",
+    "makes": "1 drink, 16 fl oz",
+    "groups": [
+      {
+        "title": "Refresher",
+        "items": [
+          [
+            "2 pumps",
+            "pineapple syrup"
+          ],
+          [
+            "2 pumps",
+            "mango syrup"
+          ],
+          [
+            "8 oz",
+            "Simply Lemonade Original"
+          ],
+          [
+            "To fill",
+            "ice"
+          ],
+          [
+            "Optional",
+            "water to adjust sweetness, only after testing"
+          ]
+        ]
+      }
+    ],
+    "steps": [
+      "Add the syrups to a 16 oz serving cup.",
+      "Add the measured base and stir thoroughly.",
+      "Fill with ice, stir again and serve immediately."
+    ],
+    "proposed": true,
+    "note": "Kitchen note: four pumps total per drink. Pump volume and final beverage yield depend on equipment and ice.",
+    "cupOnly": true
+  }
+];
+
+/* Bottled versions for a 16 oz bottle, no ice. Without ice a cup recipe already comes to roughly 13-14 oz with foam,
+   so four recipes keep their cup amounts (6 oz milk). Brown Sugar Cookie Butter has more foam and milk, so it is scaled x0.75 (8 oz to 6 oz milk). */
+var BOTTLED = {
+  "ghost-latte": {
+    makes: "1 bottle, 16 oz (6 oz milk)",
+    groups: [
+      { title: "Latte base", items: [
+        ["3 tsp", "NESCAFÉ Blonde instant espresso (triple shot)"],
+        ["3 oz", "warm water"],
+        ["3 pumps", "marshmallow syrup (Monin or Torani)"],
+        ["1 pump", "vanilla syrup"],
+        ["6 oz", "whole milk or Kirkland lactose-free milk"],
+        ["1–2 tbsp", "marshmallow fluff"]
+      ]},
+      { title: "Sweet cold foam", items: [
+        ["2 tbsp", "heavy whipping cream (Kroger)"],
+        ["1 tbsp", "milk"],
+        ["1 tsp", "powdered sugar"],
+        ["1 tsp", "vanilla bean paste"],
+        ["1 tsp", "McCormick pumpkin pie spice"]
+      ]},
+      { title: "To finish", items: [
+        ["Sprinkle", "McCormick pumpkin pie spice"]
+      ]}
+    ],
+    steps: [
+      "Dissolve the instant espresso in the warm water.",
+      "Add the syrups and marshmallow fluff to a pitcher.",
+      "Pour in the espresso and 6 oz milk, then stir until smooth.",
+      "Whisk the foam ingredients until thick and creamy.",
+      "Pour the latte into the bottle.",
+      "Top with the sweet cold foam.",
+      "Sprinkle with pumpkin pie spice and cap the bottle."
+    ]
+  },
+  "brown-sugar-cookie-butter-latte": {
+    line: "Bottled, served cold",
+    makes: "1 bottle, 16 oz (6 oz milk)",
+    groups: [
+      { title: "Espresso / coffee base", items: [
+        ["3 shots", "espresso, triple (or ¾ cup strong brewed coffee or instant espresso)"],
+        ["¾–1½ tbsp", "creamy cookie butter (Biscoff® or similar)"],
+        ["¾ tsp", "light brown sugar (or brown sugar cookie syrup)"],
+        ["Pinch", "ground cinnamon and sea salt"]
+      ]},
+      { title: "Latte milk", items: [
+        ["¾ cup", "milk of your choice, 6 oz (whole milk, 2%, or oat milk)"]
+      ]},
+      { title: "Cookie butter cold foam", items: [
+        ["3 tbsp", "heavy cream"],
+        ["¾ tbsp", "milk (2¼ tsp)"],
+        ["¾ tbsp", "cookie butter spread (2¼ tsp)"],
+        ["¾ tsp", "powdered sugar or vanilla extract"]
+      ]},
+      { title: "Garnish", items: [
+        ["Sprinkle", "crushed Biscoff® cookies"],
+        ["Drizzle", "melted cookie butter"]
+      ]}
+    ],
+    steps: [
+      "Add the cookie butter, brown sugar, cinnamon and salt to a pitcher.",
+      "Brew 3 shots of hot espresso over it and stir until smooth.",
+      "Add 6 oz milk and stir to combine.",
+      "Froth the foam ingredients for 30–45 seconds until thick and velvety.",
+      "Pour the latte into the bottle.",
+      "Top with the cookie butter cold foam.",
+      "Add crushed Biscoff® cookies and melted cookie butter, then cap the bottle."
+    ]
+  },
+  "sweet-and-salty-iced-coffee": {
+    makes: "1 bottle, 16 oz (6 oz milk)",
+    groups: [
+      { title: "Coffee base", items: [
+        ["3 tsp", "NESCAFÉ Blonde instant espresso (triple shot)"],
+        ["3 oz", "warm water"],
+        ["2 tsp", "hazelnut syrup (Monin or Torani)"],
+        ["2 tsp", "Torani cupcake syrup"],
+        ["2 tsp", "Ghirardelli sea salt caramel sauce"],
+        ["1 tbsp", "Ghirardelli white chocolate sauce"],
+        ["1 tsp", "caramel sauce (for bottle)"],
+        ["1 tsp", "white chocolate sauce (for bottle)"],
+        ["6 oz", "whole milk or Kirkland lactose-free milk"]
+      ]},
+      { title: "Sweet cold foam", items: [
+        ["2 tbsp", "heavy whipping cream (Kroger)"],
+        ["1 tbsp", "milk"],
+        ["1 tsp", "powdered sugar"],
+        ["1 tsp", "vanilla bean paste"],
+        ["Pinch", "sea salt"]
+      ]},
+      { title: "Topping", items: [
+        ["1 tsp", "caramel drizzle"],
+        ["Dash", "McCormick chocolate hazelnut finish spice"]
+      ]}
+    ],
+    steps: [
+      "Drizzle 1 tsp caramel sauce and 1 tsp white chocolate sauce inside the bottle.",
+      "In a pitcher, dissolve the instant espresso in the warm water.",
+      "Add the syrups, sea salt caramel sauce and white chocolate sauce. Stir well.",
+      "Add 6 oz milk and stir to combine.",
+      "Pour the mixture into the bottle.",
+      "Whisk the foam ingredients until smooth and creamy.",
+      "Top with foam, 1 tsp caramel drizzle and a dash of finish spice."
+    ]
+  },
+  "oreo-chocolate-latte": {
+    makes: "1 bottle, 16 oz (6 oz milk)",
+    groups: [
+      { title: "Latte base", items: [
+        ["3 tsp", "NESCAFÉ Blonde instant espresso (triple shot)"],
+        ["3 oz", "warm water"],
+        ["1½ tbsp", "Ghirardelli chocolate sauce"],
+        ["1 pump", "vanilla syrup"],
+        ["6 oz", "whole milk or Kirkland lactose-free milk"]
+      ]},
+      { title: "Oreo® chocolate cold foam", items: [
+        ["2 tbsp", "heavy whipping cream (Kroger)"],
+        ["1 tbsp", "milk"],
+        ["1 tbsp", "Oreo® cookie crumbs (finely crushed)"],
+        ["1 tsp", "powdered sugar"],
+        ["½ tsp", "vanilla bean paste or vanilla syrup"]
+      ]},
+      { title: "Topping", items: [
+        ["Drizzle", "chocolate sauce"],
+        ["Sprinkle", "crushed Oreo® cookies"]
+      ]}
+    ],
+    steps: [
+      "Dissolve the instant espresso in the warm water.",
+      "Add the chocolate sauce and vanilla syrup to a pitcher.",
+      "Pour in the espresso and 6 oz milk, then stir to combine.",
+      "Whisk the foam ingredients until thick, creamy and pourable.",
+      "Pour the latte into the bottle.",
+      "Top with the Oreo® cold foam.",
+      "Drizzle with chocolate sauce, add crushed Oreo® cookies and cap the bottle."
+    ]
+  },
+  "chocolate-peanut-butter-cup-latte": {
+    makes: "1 bottle, 16 oz (6 oz milk)",
+    groups: [
+      { title: "Latte", items: [
+        ["3 tsp", "NESCAFÉ Blonde instant espresso (triple shot)"],
+        ["3 oz", "warm water"],
+        ["1 tbsp", "Ghirardelli chocolate sauce"],
+        ["1 tbsp", "creamy peanut butter"],
+        ["6 oz", "whole or lactose-free milk"]
+      ]},
+      { title: "Chocolate peanut butter cold foam", items: [
+        ["2 tbsp", "Kroger heavy whipping cream"],
+        ["1 tbsp", "whole milk"],
+        ["1 tsp", "creamy peanut butter"],
+        ["1 tsp", "Ghirardelli chocolate sauce"],
+        ["1 tsp", "powdered sugar"],
+        ["1", "finely crushed mini peanut butter cup"]
+      ]}
+    ],
+    steps: [
+      "Dissolve the espresso in the warm water in a pitcher.",
+      "Whisk in the chocolate sauce and peanut butter.",
+      "Add 6 oz milk and stir until smooth.",
+      "Froth the cream, milk, peanut butter, chocolate and sugar.",
+      "Pour the latte into the bottle.",
+      "Top with the foam and crushed peanut butter cup."
+    ]
+  }
+};
+
+BOTTLED["cocoa-cloud-latte"] = {
+  "makes": "1 bottle, 16 oz (6 oz milk)",
+  "groups": [
+    {
+      "title": "Latte",
+      "items": [
+        [
+          "3 tsp",
+          "NESCAFÉ Blonde instant espresso (triple shot)"
+        ],
+        [
+          "3 oz",
+          "warm water"
+        ],
+        [
+          "1 tbsp",
+          "Ghirardelli chocolate flavored sauce"
+        ],
+        [
+          "1 tbsp",
+          "Ghirardelli salted caramel sauce"
+        ],
+        [
+          "6 oz",
+          "whole milk or Kirkland lactose-free milk"
+        ]
+      ]
+    },
+    {
+      "title": "Cocoa Cloud foam",
+      "items": [
+        [
+          "3 tbsp",
+          "heavy whipping cream"
+        ],
+        [
+          "2 tbsp",
+          "milk"
+        ],
+        [
+          "1 tbsp",
+          "Ghirardelli cocoa powder"
+        ],
+        [
+          "½ tbsp",
+          "Monin vanilla syrup"
+        ],
+        [
+          "Pinch",
+          "sea salt"
+        ],
+        [
+          "1 tbsp",
+          "powdered sugar"
+        ]
+      ]
+    }
+  ],
+  "steps": [
+    "Dissolve the instant espresso in the warm water in a pitcher.",
+    "Stir in the chocolate and salted caramel sauces.",
+    "Add 6 oz milk and stir until smooth.",
+    "Whip the foam ingredients until thick but pourable.",
+    "Pour the latte into the bottle.",
+    "Top with the cocoa foam and cap the bottle."
+  ]
+};
+BOTTLED["salted-maple-latte"] = {
+  "makes": "1 bottle, 16 oz (6 oz milk)",
+  "groups": [
+    {
+      "title": "Latte",
+      "items": [
+        [
+          "3 tsp",
+          "NESCAFÉ Blonde instant espresso (triple shot)"
+        ],
+        [
+          "3 oz",
+          "warm water"
+        ],
+        [
+          "1 tbsp",
+          "maple syrup"
+        ],
+        [
+          "Small pinch",
+          "sea salt"
+        ],
+        [
+          "6 oz",
+          "whole milk or Kirkland lactose-free milk"
+        ]
+      ]
+    },
+    {
+      "title": "Signature Grace Foam",
+      "items": [
+        [
+          "1 tbsp",
+          "heavy whipping cream"
+        ],
+        [
+          "2 tbsp",
+          "milk"
+        ]
+      ]
+    }
+  ],
+  "steps": [
+    "Dissolve the instant espresso in the warm water in a pitcher.",
+    "Stir in the maple syrup and sea salt.",
+    "Add 6 oz milk and stir to combine.",
+    "Froth the foam ingredients.",
+    "Pour the latte into the bottle.",
+    "Top with the foam and cap the bottle."
+  ]
+};
+BOTTLED["vanilla-bean-latte"] = {
+  "makes": "1 bottle, 16 oz (6 oz milk)",
+  "groups": [
+    {
+      "title": "Latte",
+      "items": [
+        [
+          "3 tsp",
+          "NESCAFÉ Blonde instant espresso (triple shot)"
+        ],
+        [
+          "3 oz",
+          "warm water"
+        ],
+        [
+          "6 oz",
+          "whole milk or Kirkland lactose-free milk"
+        ],
+        [
+          "3 pumps",
+          "Monin or Torani vanilla bean or vanilla syrup"
+        ]
+      ]
+    },
+    {
+      "title": "Signature Grace Foam",
+      "items": [
+        [
+          "1 tbsp",
+          "heavy whipping cream"
+        ],
+        [
+          "2 tbsp",
+          "milk"
+        ],
+        [
+          "Optional",
+          "2 pumps vanilla syrup"
+        ]
+      ]
+    }
+  ],
+  "steps": [
+    "Dissolve the instant espresso in the warm water in a pitcher.",
+    "Mix in the vanilla syrup and 6 oz milk.",
+    "Froth the foam until airy.",
+    "Pour the latte into the bottle.",
+    "Spoon the foam on top and cap the bottle."
+  ]
+};
+BOTTLED["mocha-latte"] = {
+  "makes": "1 bottle, 16 oz (6 oz milk)",
+  "groups": [
+    {
+      "title": "Latte",
+      "items": [
+        [
+          "3 tsp",
+          "NESCAFÉ Blonde instant espresso (triple shot)"
+        ],
+        [
+          "3 oz",
+          "warm water"
+        ],
+        [
+          "1 tbsp",
+          "Ghirardelli chocolate flavored sauce"
+        ],
+        [
+          "6 oz",
+          "whole milk or Kirkland lactose-free milk"
+        ]
+      ]
+    },
+    {
+      "title": "Signature Grace Foam",
+      "items": [
+        [
+          "1 tbsp",
+          "heavy whipping cream"
+        ],
+        [
+          "2 tbsp",
+          "milk"
+        ],
+        [
+          "Optional",
+          "2 pumps vanilla syrup"
+        ]
+      ]
+    }
+  ],
+  "steps": [
+    "Dissolve the instant espresso in the warm water in a pitcher.",
+    "Whisk in the chocolate sauce.",
+    "Stir in 6 oz milk.",
+    "Froth the foam ingredients.",
+    "Pour the latte into the bottle.",
+    "Top with the foam and cap the bottle."
+  ]
+};
+BOTTLED["cinnamon-roll-latte"] = {
+  "makes": "1 bottle, 16 oz (6 oz milk)",
+  "groups": [
+    {
+      "title": "Latte",
+      "items": [
+        [
+          "3 tsp",
+          "NESCAFÉ Blonde instant espresso (triple shot)"
+        ],
+        [
+          "3 oz",
+          "warm water"
+        ],
+        [
+          "6 oz",
+          "whole milk or Kirkland lactose-free milk"
+        ],
+        [
+          "3 pumps",
+          "cinnamon roll flavored syrup"
+        ]
+      ]
+    },
+    {
+      "title": "Signature Grace Foam",
+      "items": [
+        [
+          "1 tbsp",
+          "heavy whipping cream"
+        ],
+        [
+          "2 tbsp",
+          "milk"
+        ],
+        [
+          "Optional",
+          "2 pumps cinnamon roll syrup"
+        ]
+      ]
+    },
+    {
+      "title": "Finish",
+      "items": [
+        [
+          "Optional",
+          "light dusting of cinnamon"
+        ]
+      ]
+    }
+  ],
+  "steps": [
+    "Dissolve the instant espresso in the warm water in a pitcher.",
+    "Add the cinnamon roll syrup and 6 oz milk.",
+    "Froth the foam ingredients.",
+    "Pour the latte into the bottle.",
+    "Top with the foam, dust lightly with cinnamon if desired, and cap the bottle."
+  ]
+};
+BOTTLED["pumpkin-cheesecake-latte"] = {
+  "makes": "1 bottle, 16 oz (6 oz milk)",
+  "groups": [
+    {
+      "title": "Latte",
+      "items": [
+        [
+          "3 tsp",
+          "NESCAFÉ Blonde instant espresso (triple shot)"
+        ],
+        [
+          "3 oz",
+          "warm water"
+        ],
+        [
+          "6 oz",
+          "whole milk or Kirkland lactose-free milk"
+        ],
+        [
+          "1 tbsp",
+          "Torani pumpkin spice syrup"
+        ],
+        [
+          "1 tbsp",
+          "Jell-O cheesecake pudding mix"
+        ]
+      ]
+    },
+    {
+      "title": "Cheesecake foam",
+      "items": [
+        [
+          "1 tsp",
+          "Jell-O cheesecake pudding mix"
+        ],
+        [
+          "2 tbsp",
+          "Kroger heavy whipping cream"
+        ],
+        [
+          "1 tsp",
+          "vanilla bean paste"
+        ],
+        [
+          "Dash",
+          "McCormick pumpkin pie spice"
+        ],
+        [
+          "Pinch",
+          "sea salt"
+        ]
+      ]
+    }
+  ],
+  "steps": [
+    "Dissolve the instant espresso in the warm water in a pitcher.",
+    "Stir in the pumpkin spice syrup.",
+    "Whisk the pudding mix with a small amount of cold milk until smooth.",
+    "Whisk in the remaining milk.",
+    "Combine with the espresso mixture.",
+    "Whip the foam until smooth and thick.",
+    "Pour the latte into the bottle and top with the foam."
+  ]
+};
+
+var LABELS = {
+ "ghost-latte": {
+  "cal": 400,
+  "fat": 16,
+  "sat": 11,
+  "chol": 70,
+  "na": 120,
+  "carb": 51,
+  "fiber": "<1",
+  "sug": 46,
+  "add": 36,
+  "pro": 6,
+  "vitd": 2.3,
+  "ca": 270,
+  "fe": 0.5,
+  "k": 440,
+  "pct": {
+   "fat": 21,
+   "sat": 55,
+   "chol": 23,
+   "na": 5,
+   "carb": 19,
+   "fiber": 3,
+   "add": 72,
+   "vitd": 12,
+   "ca": 21,
+   "fe": 3,
+   "k": 9
+  },
+  "ing": "Milk, Water, Cream, Marshmallow Syrup (Pure Cane Sugar, Water, Natural Flavors, Citric Acid), Marshmallow Creme (Corn Syrup, Sugar, Dried Egg White, Vanillin), Vanilla Syrup (Pure Cane Sugar, Water, Natural Flavors, Citric Acid), Vanilla Bean Paste (Cane Sugar, Water, Vanilla Extract, Vanilla Bean Seeds, Gum Tragacanth (a Natural Thickener)), Instant Coffee, Powdered Sugar (Sugar, Cornstarch), Pumpkin Pie Spice.",
+  "alg": "Milk, Egg",
+  "may": ""
+ },
+ "brown-sugar-cookie-butter-latte": {
+  "cal": 490,
+  "fat": 34,
+  "sat": 17,
+  "chol": 90,
+  "na": 350,
+  "carb": 35,
+  "fiber": 0,
+  "sug": 27,
+  "add": 18,
+  "pro": 8,
+  "vitd": 2.3,
+  "ca": 260,
+  "fe": 0.0,
+  "k": 420,
+  "pct": {
+   "fat": 44,
+   "sat": 87,
+   "chol": 29,
+   "na": 15,
+   "carb": 13,
+   "fiber": 0,
+   "add": 36,
+   "vitd": 11,
+   "ca": 20,
+   "fe": 0,
+   "k": 9
+  },
+  "ing": "Milk, Espresso (Water, Coffee), Cream, Cookie Butter (Biscoff Cookies [Wheat Flour, Sugar, Vegetable Oils (Soybean, Sunflower, Canola and/or Palm), Brown Sugar Syrup, Sodium Bicarbonate, Soy Flour, Salt, Cinnamon], Canola Oil, Sugar, Soy Lecithin, Citric Acid), Brown Sugar, Biscoff Cookies [Wheat Flour, Sugar, Vegetable Oils (Soybean, Sunflower, Canola and/or Palm), Brown Sugar Syrup, Sodium Bicarbonate, Soy Flour, Salt, Cinnamon], Powdered Sugar (Sugar, Cornstarch), Salt, Cinnamon.",
+  "alg": "Milk, Wheat, Soy",
+  "may": ""
+ },
+ "sweet-and-salty-iced-coffee": {
+  "cal": 470,
+  "fat": 17,
+  "sat": 11,
+  "chol": 70,
+  "na": 490,
+  "carb": 68,
+  "fiber": 0,
+  "sug": 60,
+  "add": 49,
+  "pro": 7,
+  "vitd": 2.3,
+  "ca": 270,
+  "fe": 0.0,
+  "k": 450,
+  "pct": {
+   "fat": 22,
+   "sat": 55,
+   "chol": 23,
+   "na": 21,
+   "carb": 25,
+   "fiber": 0,
+   "add": 99,
+   "vitd": 12,
+   "ca": 21,
+   "fe": 0,
+   "k": 10
+  },
+  "ing": "Milk, Water, Cream, White Chocolate Sauce (Cane Sugar, Water, Skim Milk, Gum Arabic, Natural Flavor, Cocoa Butter, Xanthan Gum, Salt, Sodium Citrate), Sea Salt Caramel Sauce (Corn Syrup, Invert Cane Sugar, Water, Cane Sugar, Skim Milk, Heavy Cream, Sweetened Condensed Skim Milk [Skim Milk, Sugar], Sea Salt, Salt, Natural Flavor, Pectin, Sodium Citrate), Hazelnut Syrup (Pure Cane Sugar, Water, Natural Flavors, Citric Acid, Potassium Sorbate, Sodium Benzoate, Caramel Color), Cupcake Syrup (Pure Cane Sugar, Water, Natural Flavors, Salt, Potassium Sorbate, Sodium Benzoate, Citric Acid), Vanilla Bean Paste (Cane Sugar, Water, Vanilla Extract, Vanilla Bean Seeds, Gum Tragacanth (a Natural Thickener)), Instant Coffee, Powdered Sugar (Sugar, Cornstarch), Chocolate Hazelnut Finishing Sugar (Sugar, Cocoa Powder Processed with Alkali, Unsweetened Chocolate, Natural Flavor), Salt.",
+  "alg": "Milk, Tree Nuts (Hazelnut)",
+  "may": "Soy"
+ },
+ "oreo-chocolate-latte": {
+  "cal": 410,
+  "fat": 19,
+  "sat": 12,
+  "chol": 70,
+  "na": 160,
+  "carb": 52,
+  "fiber": 2,
+  "sug": 46,
+  "add": 35,
+  "pro": 8,
+  "vitd": 2.3,
+  "ca": 270,
+  "fe": 1.0,
+  "k": 510,
+  "pct": {
+   "fat": 24,
+   "sat": 60,
+   "chol": 23,
+   "na": 7,
+   "carb": 19,
+   "fiber": 7,
+   "add": 70,
+   "vitd": 12,
+   "ca": 20,
+   "fe": 5,
+   "k": 11
+  },
+  "ing": "Milk, Water, Chocolate Sauce (Cane Sugar, Water, Invert Cane Sugar, Cocoa Powder, Unsweetened Chocolate, Vanilla Extract, Salt, Soy Lecithin), Cream, Vanilla Syrup (Pure Cane Sugar, Water, Natural Flavors, Citric Acid), Oreo Cookie Crumbs (Unbleached Enriched Flour [Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate (Vitamin B1), Riboflavin (Vitamin B2), Folic Acid], Sugar, Palm Oil, Soybean and/or Canola Oil, Cocoa [Processed with Alkali], High Fructose Corn Syrup, Leavening [Baking Soda and/or Calcium Phosphate], Salt, Soy Lecithin, Chocolate, Artificial Flavor), Instant Coffee, Vanilla Bean Paste (Cane Sugar, Water, Vanilla Extract, Vanilla Bean Seeds, Gum Tragacanth (a Natural Thickener)), Powdered Sugar (Sugar, Cornstarch).",
+  "alg": "Milk, Wheat, Soy",
+  "may": ""
+ },
+ "chocolate-peanut-butter-cup-latte": {
+  "cal": 480,
+  "fat": 30,
+  "sat": 15,
+  "chol": 70,
+  "na": 250,
+  "carb": 41,
+  "fiber": 3,
+  "sug": 34,
+  "add": 23,
+  "pro": 13,
+  "vitd": 2.3,
+  "ca": 280,
+  "fe": 1.0,
+  "k": 630,
+  "pct": {
+   "fat": 39,
+   "sat": 73,
+   "chol": 23,
+   "na": 11,
+   "carb": 15,
+   "fiber": 11,
+   "add": 46,
+   "vitd": 12,
+   "ca": 22,
+   "fe": 5,
+   "k": 13
+  },
+  "ing": "Milk, Water, Cream, Chocolate Sauce (Cane Sugar, Water, Invert Cane Sugar, Cocoa Powder, Unsweetened Chocolate, Vanilla Extract, Salt, Soy Lecithin), Peanut Butter (Roasted Peanuts, Sugar, Contains 2% or Less of: Fully Hydrogenated Vegetable Oils [Rapeseed and Soybean], Salt, Molasses), Peanut Butter Cup (Milk Chocolate [Sugar, Cocoa Butter, Chocolate, Skim Milk, Milk Fat, Lactose, Soy Lecithin, PGPR (Emulsifier)], Peanuts, Sugar, Dextrose, Salt, TBHQ and Citric Acid [to Maintain Freshness]), Instant Coffee, Powdered Sugar (Sugar, Cornstarch).",
+  "alg": "Milk, Peanuts, Soy",
+  "may": ""
+ }
+};
+
+/* Label view: FDA-style Nutrition Facts per bottle, ingredient statement and allergen statement. Values are estimates. */
+function gtxt(x) { return x === "<1" ? "less than 1g" : x + "g"; }
+function esc(s) { return String(s).replace(/\[\[(.*?)\]\]/g, '<mark>$1</mark>'); }
+function labelHTML(id) {
+  var L = LABELS[id], base = find(id);
+  var P = L.pct;
+  function row(cls, label, val, pc) {
+    return '<tr class="' + cls + '"><td><b>' + label + "</b> " + val + "</td><td>" + (pc === undefined ? "" : "<b>" + pc + "%</b>") + "</td></tr>";
+  }
+  function mic(label, val, pc) { return "<tr><td>" + label + " " + val + "</td><td>" + pc + "%</td></tr>"; }
+  var nf =
+    '<table class="nf"><caption>Nutrition Facts</caption><tbody>' +
+    '<tr class="thin"><td colspan="2">1 serving per container</td></tr>' +
+    '<tr class="thick-b"><td><b>Serving size</b></td><td class="r"><b>1 bottle (16 fl oz)</b></td></tr>' +
+    '<tr class="cal"><td><small>Amount per serving</small><br><span class="calw">Calories</span></td><td class="r"><span class="calv">' + L.cal + "</span></td></tr>" +
+    '<tr class="dvh"><td colspan="2" class="r"><b>% Daily Value*</b></td></tr>' +
+    row("", "Total Fat", gtxt(L.fat), P.fat) +
+    row("ind", "Saturated Fat", gtxt(L.sat), P.sat) +
+    '<tr class="ind"><td><i>Trans</i> Fat 0g</td><td></td></tr>' +
+    row("", "Cholesterol", L.chol + "mg", P.chol) +
+    row("", "Sodium", L.na + "mg", P.na) +
+    row("", "Total Carbohydrate", gtxt(L.carb), P.carb) +
+    row("ind", "Dietary Fiber", gtxt(L.fiber), P.fiber) +
+    '<tr class="ind"><td><b>Total Sugars</b> ' + gtxt(L.sug) + "</td><td></td></tr>" +
+    row("ind2", "Includes " + gtxt(L.add) + " Added Sugars", "", P.add).replace("<b>Includes", "Includes").replace("Added Sugars</b>", "Added Sugars") +
+    '<tr class="thick-b"><td><b>Protein</b> ' + gtxt(L.pro) + "</td><td></td></tr>" +
+    mic("Vitamin D", L.vitd + "mcg", P.vitd) + mic("Calcium", L.ca + "mg", P.ca) + mic("Iron", L.fe + "mg", P.fe) + mic("Potassium", L.k + "mg", P.k) +
+    '<tr class="nfoot"><td colspan="2">* The % Daily Value (DV) tells you how much a nutrient in a serving of food contributes to a daily diet. 2,000 calories a day is used for general nutrition advice.</td></tr>' +
+    "</tbody></table>";
+  return '<div class="label-card"><div class="lbl-grid"><div>' + nf + '</div><div class="lbl-text">' +
+    '<div class="lbl-brand">Covered in Grace Beverage Co.</div>' +
+    '<h2 class="lbl-name">' + base.name + "</h2>" +
+    '<p class="lbl-net"><b>Net contents:</b> 16 fl oz bottle</p>' +
+    '<p class="lbl-ing"><b>INGREDIENTS:</b> ' + esc(L.ing) + "</p>" +
+    '<p class="lbl-alg"><b>CONTAINS:</b> ' + L.alg.toUpperCase() + (L.may ? '<br><b>MAY CONTAIN:</b> ' + L.may.toUpperCase() : "") + "</p>" +
+    '<p class="lbl-ref"><b>KEEP REFRIGERATED.</b> Shake well. Foam may settle.</p>' +
+    '<p class="lbl-co">Covered in Grace Beverage Co., ' + esc("Jefferson, GA") + "</p>" +
+    "</div></div></div>";
+}
+
+function renderLabel(r) {
+  document.title = r.name + " Bottle Label";
+  var todo = (LABELS[r.base].ing.match(/\[\[/g) || []).length;
+  app.innerHTML =
+    '<header class="bar"><a class="btn btn-home" href="#bottled">' + ICON_HOME + 'Home</a>' +
+    '<div class="title"><small>Bottle label</small><h1>' + r.name + '</h1></div>' +
+    '<img class="logo" src="' + LOGO + '" alt="Covered in Grace Beverage Co. logo"></header>' +
+    "<main>" +
+    '<div class="switch"><a class="seg" href="#' + r.base + '-bottled">Back to the recipe</a></div>' +
+    '<div class="check-box" role="note"><b>Check before printing.</b> Nutrition numbers are estimates added up from product labels and standard values, not lab results. ' +
+    (todo ? "Highlighted text is missing a product&rsquo;s ingredient list. " : "") +
+    'Sauce, syrup and vanilla paste details come from your product labels. Confirm the allergen line against every product you use. Net contents assume a full 16 fl oz bottle.</div>' +
+    labelHTML(r.base) +
+    '<div class="foot"><a class="btn btn-home" href="#bottled">' + ICON_HOME + "Home</a></div></main>";
+  window.scrollTo(0, 0);
+}
+
+var LOGO = "data:image/webp;base64,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";
+var ICON_HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M10 20v-5.5h4V20"/></svg>';
+var ICON_RESET = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>';
+var ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>';
+
+var app = document.getElementById("app");
+var live = document.getElementById("live");
+var KEY = "cig-prep-checks";
+var checks = {};
+
+function load() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    if (d && d.t && Date.now() - d.t < 4 * 3600 * 1000 && d.c) checks = d.c;
+  } catch (e) {}
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), c: checks })); } catch (e) {}
+}
+function done(r) { return (checks[r.id] || []).length; }
+function find(id) { for (var i = 0; i < RECIPES.length; i++) if (RECIPES[i].id === id) return RECIPES[i]; return null; }
+
+/* The bottled version of a recipe shares its name, line and allergens; amounts and steps come from BOTTLED. */
+function get(r, bottled) {
+  if (!bottled) return r;
+  var v = BOTTLED[r.id];
+  return { id: r.id + "-bottled", base: r.id, bottled: true, name: r.name, line: v.line || r.line + " · Bottled", makes: v.makes, allergens: r.allergens, groups: v.groups, steps: v.steps, proposed: r.proposed, note: r.note };
+}
+function switcher(active, cupHref, botHref) {
+  return '<nav class="switch" aria-label="Recipe size">' +
+    '<a class="seg" href="' + cupHref + '"' + (active === "cup" ? ' aria-current="page"' : "") + '>Cup recipes</a>' +
+    '<a class="seg" href="' + botHref + '"' + (active === "bottled" ? ' aria-current="page"' : "") + '>Bottled, 16 oz</a></nav>';
+}
+
+/* The menu, in the order it is printed. A drink with no id has no recipe card in this tablet yet. */
+var MENU = [
+  { title: "Weekly Blessings", sub: "One special featured each day", items: [
+    { day: "Monday", dow: 1, blessing: "Heaven Sent", name: "Cocoa Cloud", id: "cocoa-cloud-latte" },
+    { day: "Tuesday", dow: 2, blessing: "Sweetly Blessed", name: "Brown Sugar Cookie Butter", id: "brown-sugar-cookie-butter-latte" },
+    { day: "Wednesday", dow: 3, blessing: "Taste & See", name: "Sweet & Salty", id: "sweet-and-salty-iced-coffee" },
+    { day: "Thursday", dow: 4, blessing: "Made for More", name: "Oreo® Chocolate", id: "oreo-chocolate-latte" },
+    { day: "Friday", dow: 5, blessing: "Spirit of Sweetness", name: "Ghost Latte", id: "ghost-latte" },
+    { day: "Saturday", dow: 6, blessing: "Chosen & Cherished", name: "Peanut Butter Cup", id: "chocolate-peanut-butter-cup-latte" },
+    { day: "Sunday", dow: 0, blessing: "Be Still", name: "Salted Maple", id: "salted-maple-latte" }
+  ]},
+  { title: "Everyday Favorites", sub: "Available daily", items: [
+    { kicker: "Every day", name: "Vanilla Bean Latte", id: "vanilla-bean-latte" },
+    { kicker: "Every day", name: "Mocha Latte", id: "mocha-latte" },
+    { kicker: "Every day", name: "Cinnamon Roll Latte", id: "cinnamon-roll-latte" }
+  ]},
+  { title: "Seasonal Blessing", sub: "Available every day through December 31", items: [
+    { kicker: "Seasonal", name: "Pumpkin Cheesecake Latte", id: "pumpkin-cheesecake-latte" }
+  ]},
+  { title: "Everyday Refreshers", sub: "Cup only, served iced", items: [
+    { kicker: "Refresher", name: "Strawberry Açaí", id: "strawberry-acai-refresher" },
+    { kicker: "Refresher", name: "Peach Mango", id: "peach-mango-refresher" },
+    { kicker: "Refresher", name: "Watermelon", id: "watermelon-refresher" },
+    { kicker: "Refresher", name: "Pink Lotus", id: "pink-lotus-refresher" },
+    { kicker: "Refresher", name: "Blue Raspberry", id: "blue-raspberry-refresher" },
+    { kicker: "Refresher", name: "Tropical Sunrise", id: "tropical-sunrise-refresher" }
+  ]}
+];
+
+function menuTile(it, bottled, today) {
+  var kicker = it.day ? it.day + " · " + it.blessing : it.kicker;
+  var badge = it.dow === today ? '<span class="chip today">Today</span>' : "";
+  var base = it.id ? find(it.id) : null;
+  if (!base || (bottled && !base.cupOnly && !BOTTLED[base.id])) {
+    return '<div class="tile tile-empty"><div><div class="kicker">' + kicker + "</div><h2>" + it.name + '</h2></div>' +
+      '<div class="meta">' + badge + '<span class="chip chip-empty">Recipe not added yet</span></div></div>';
+  }
+  var r = base.cupOnly ? base : get(base, bottled);
+  var d = done(r);
+  var flag = (base.cupOnly ? '<span class="chip">Cup only</span>' : "") + (r.proposed ? '<span class="chip">Proposed</span>' : "");
+  var prog = d > 0 ? '<span class="chip progress">' + (d === r.steps.length ? "All steps done" : d + " of " + r.steps.length + " steps done") + "</span>" : "";
+  return '<a class="tile" href="#' + r.id + '"><div><div class="kicker">' + kicker + "</div><h2>" + it.name + "</h2></div>" +
+    '<div class="meta">' + badge + flag + '<span class="chip">Makes ' + r.makes + '</span><span class="chip">' + r.steps.length + " steps</span>" + prog + "</div></a>";
+}
+
+function renderHome(bottled) {
+  document.title = "Covered in Grace Prep Recipes";
+  var today = new Date().getDay();
+  var sections = MENU.map(function (s) {
+    return '<section class="menu-sec"><h2 class="sec-h">' + s.title + '</h2><p class="sec-sub">' + s.sub + '</p><div class="grid">' +
+      s.items.map(function (it) { return menuTile(it, bottled, today); }).join("") + "</div></section>";
+  }).join("");
+  app.innerHTML =
+    '<header class="bar"><img class="logo" src="' + LOGO + '" alt="Covered in Grace Beverage Co. logo">' +
+    '<div class="brand"><small>Covered in Grace Beverage Co.</small><h1>Prep Recipes</h1></div></header>' +
+    '<main>' + switcher(bottled ? "bottled" : "cup", "#cup", "#bottled") + sections + "</main>";
+  window.scrollTo(0, 0);
+}
+
+function renderRecipe(r) {
+  document.title = r.name + (r.bottled ? " Bottled Prep" : " Prep");
+  var home = r.bottled ? "#bottled" : "#cup";
+  var other = r.bottled ? "#" + r.base : "#" + r.id + "-bottled";
+  var groups = r.groups.map(function (g) {
+    return '<section class="ing-group"><h3>' + g.title + "</h3><ul>" +
+      g.items.map(function (i) { return '<li><span class="qty">' + i[0] + "</span><span>" + i[1] + "</span></li>"; }).join("") +
+      "</ul></section>";
+  }).join("");
+  var steps = r.steps.map(function (s, i) {
+    return '<li><button type="button" class="step" role="checkbox" aria-checked="false" data-i="' + i + '">' +
+      '<span class="num"><span>' + (i + 1) + "</span>" + ICON_CHECK + '</span><span class="txt">' + s + "</span></button></li>";
+  }).join("");
+  app.innerHTML =
+    '<header class="bar"><a class="btn btn-home" href="' + home + '">' + ICON_HOME + 'Home</a>' +
+    '<div class="title"><small>' + r.line + "</small><h1>" + r.name + '</h1></div>' +
+    '<img class="logo" src="' + LOGO + '" alt="Covered in Grace Beverage Co. logo"></header>' +
+    "<main>" + (r.cupOnly ? "" : switcher(r.bottled ? "bottled" : "cup", "#" + (r.bottled ? r.base : r.id), "#" + (r.bottled ? r.id : r.id + "-bottled"))) +
+    (r.bottled && LABELS[r.base] ? '<div class="switch"><a class="seg" href="#' + r.base + '-label">Bottle label: ingredients, allergens, nutrition</a></div>' : "") +
+    '<div class="yield"><span class="label">One batch makes</span><span class="amount">' + r.makes + "</span></div>" +
+    (r.proposed ? '<div class="proposed" role="note"><strong>Proposed recipe.</strong> Test before service.</div>' : "") +
+    (r.note ? '<div class="proposed" role="note">' + r.note + "</div>" : "") +
+    (r.allergens ? '<div class="allergen" role="note"><strong>Allergens:</strong> ' + r.allergens + "</div>" : "") +
+    '<div class="cols"><div><h2 class="sec">Ingredients</h2>' + groups + "</div>" +
+    '<div><h2 class="sec">Steps <span class="count" id="count"></span></h2><ol class="steps" id="steps">' + steps + "</ol>" +
+    '<div class="done-banner" id="banner" hidden><span>All steps done.</span><a class="btn btn-home" href="' + home + '">' + ICON_HOME + "Home</a></div></div></div>" +
+    '<div class="foot"><a class="btn btn-home" href="' + home + '">' + ICON_HOME + 'Home</a>' +
+    '<button type="button" class="btn btn-ghost" id="reset">' + ICON_RESET + "Start over</button></div></main>";
+  paint(r);
+  window.scrollTo(0, 0);
+}
+
+function paint(r) {
+  var set = checks[r.id] || [];
+  var btns = app.querySelectorAll(".step");
+  for (var i = 0; i < btns.length; i++) btns[i].setAttribute("aria-checked", set.indexOf(i) > -1 ? "true" : "false");
+  var c = document.getElementById("count");
+  if (c) c.textContent = set.length + " of " + r.steps.length + " done";
+  var b = document.getElementById("banner");
+  if (b) b.hidden = set.length !== r.steps.length;
+}
+
+var current = null;
+function route() {
+  var id = (location.hash || "").replace("#", "");
+  var lab = /-label$/.test(id);
+  if (lab) {
+    var lb = find(id.replace(/-label$/, ""));
+    if (lb && LABELS[lb.id]) { current = null; renderLabel(get(lb, true)); return; }
+  }
+  var bottled = /-bottled$/.test(id);
+  var base = find(bottled ? id.replace(/-bottled$/, "") : id);
+  current = base && (!bottled || BOTTLED[base.id]) ? get(base, bottled) : null;
+  if (current) renderRecipe(current); else renderHome(id !== "cup");
+}
+
+app.addEventListener("click", function (e) {
+  if (!current) return;
+  var step = e.target.closest(".step");
+  if (step) {
+    var i = Number(step.getAttribute("data-i"));
+    var set = checks[current.id] || (checks[current.id] = []);
+    var at = set.indexOf(i);
+    if (at > -1) set.splice(at, 1); else set.push(i);
+    save(); paint(current);
+    if (set.length === current.steps.length) live.textContent = "All steps done.";
+    return;
+  }
+  if (e.target.closest("#reset")) {
+    checks[current.id] = []; save(); paint(current);
+    live.textContent = "Steps cleared.";
+  }
+});
+
+window.addEventListener("hashchange", route);
+load(); route();
+
+/* Keep the tablet awake while someone is prepping. */
+function keepAwake() {
+  try { if (navigator.wakeLock) navigator.wakeLock.request("screen").catch(function () {}); } catch (e) {}
+}
+keepAwake();
+document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") keepAwake(); });
+</script>
+<script>
+/* Lets the iPad reopen the page when the Wi-Fi is spotty. */
+if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
+</script>
+</body>
+</html>
